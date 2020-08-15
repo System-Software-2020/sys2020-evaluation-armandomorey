@@ -1,45 +1,51 @@
-	;; Program ex1.asm
-	;; nasm -f elf32 ex1.asm -o ex1.o
-	;; ld -m elf_i386 ex1.o -o ex1
-	 
-	
+;; Hello x86 assembly world 
+;; With x86 cdecl ABI
+
         global _start
-        global main
-        global write
-        
+          
         section .data
-        p1 db 0x48, 0x65, 0x6c
-        p2 db 0x6c, 0x6f, 0xa
-	
+        msg db "Hello World", 0xa
+
+        
         section .text
 
 _start:
         call main
-        mov ebx, eax            
-        mov eax, 1              
-        int 0x80                
 
+        mov ebx, eax            ; Get status code
+        mov eax, 1              ; Syscall exit
+        int 0x80                
 main:
-        push ebp                
+        push ebp                ; Prologue
         mov ebp, esp
-        push 6                 
-        push p1
+
+        push 12                 ; Push arguments
+        push msg
         push 1
-        call write
-        add esp, 8
-        mov eax, 0              
-        mov esp, ebp            
+        call write              ; Call funtion
+        
+        add esp, 3*4            ; Clean stack
+        mov eax, 0              ; Exit status
+
+        mov esp, ebp            ; Epilogue
         pop ebp
-        ret                  
+
+        ret                     
 
 write:
-        push ebp                
+        push ebp                ; Prologue
         mov ebp, esp
-        mov ebx, [esp+8]                 
-        mov ecx, [esp+12]                 
-        mov edx, [esp+16]                 
-        mov eax, 4              
-        int 0x80                
-        mov esp, ebp            
+         
+        push ebx                ; Non-volatile
+
+        mov ebx, [esp+12]       ; file descriptor
+        mov ecx, [esp+16]       ; start address
+        mov edx, [esp+20]       ; how many bytes
+        mov eax, 4              ; syscall write 
+        int 0x80                ; perform syscall
+
+        pop ebx
+
+        mov esp, ebp            ;Epilogue
         pop ebp
         ret
